@@ -33,21 +33,45 @@ binary_data["description"] = binary_data["description"].map(labels)
 binary_data.to_csv("data/binary_data.csv", index=False)
 
 
-# For each of the features, try to model in a simple binary logistic regression
-X = binary_data[["LST_diff_1km", "NDVI", "NDWI", "VH_gamma0", "VV_gamma0"]]
+"""
+Runs a simple logistic regression model
+"""
+def run_logistic_regression(X, y):
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=3)
+
+    model = LogisticRegression()
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_test)
+
+    # Evaluate the model
+    accuracy = accuracy_score(y_test, y_pred)
+    conf_matrix = confusion_matrix(y_test, y_pred)
+    classification_rep = classification_report(y_test, y_pred)
+
+    print(f'Accuracy: {accuracy}')
+    print('Confusion Matrix:\n', conf_matrix)
+    print('Classification Report:\n', classification_rep)
+
+
+"""
+Use a basline model: here this is just the dates
+"""
+# Baseline: compute temporal changes (using months)
+binary_data['date'] = pd.to_datetime(binary_data["date"])
+binary_data['month'] = binary_data["date"].dt.month
+
+X = binary_data["month"]
 y = binary_data["description"]
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=3)
+run_logistic_regression(X.to_frame().values.reshape((-1, 1)), y)
 
-model = LogisticRegression()
-model.fit(X_train, y_train)
-y_pred = model.predict(X_test)
+"""
+Use a better feature set (this time, all the other parameters including the date), 
+as a step above baseline.
+"""
 
-# Evaluate the model
-accuracy = accuracy_score(y_test, y_pred)
-conf_matrix = confusion_matrix(y_test, y_pred)
-classification_rep = classification_report(y_test, y_pred)
+# For each of the features, try to model in a simple binary logistic regression
+X = binary_data[["month", "LST_diff_1km", "NDVI", "NDWI", "VH_gamma0", "VV_gamma0"]]
+y = binary_data["description"]
 
-print(f'Accuracy: {accuracy}')
-print('Confusion Matrix:\n', conf_matrix)
-print('Classification Report:\n', classification_rep)
+run_logistic_regression(X, y)
