@@ -42,6 +42,8 @@ def run_logistic_regression(X, y):
     model = LogisticRegression()
     model.fit(X_train, y_train)
     y_pred = model.predict(X_test)
+    print("Coefficients:", model.coef_)
+    print("Intercept:", model.intercept_)
 
     # Evaluate the model
     accuracy = accuracy_score(y_test, y_pred)
@@ -75,3 +77,30 @@ X = binary_data[["month", "LST_diff_1km", "NDVI", "NDWI", "VH_gamma0", "VV_gamma
 y = binary_data["description"]
 
 run_logistic_regression(X, y)
+
+# Plot ROC curve
+import matplotlib.pyplot as plt
+
+def plot_roc_curve(true_positive, false_positive, true_negative, false_negative, save_path):
+    # Calculate True Positive Rate (Sensitivity) and False Positive Rate
+    tpr = true_positive / (true_positive + false_negative)
+    fpr = false_positive / (false_positive + true_negative)
+
+    # Plot ROC curve
+    plt.figure(figsize=(8, 8))
+    plt.plot(fpr, tpr, color='darkorange', lw=2, marker='o', label='ROC curve')
+    plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Receiver Operating Characteristic (ROC) Curve')
+    plt.legend(loc='lower right')
+
+    plt.savefig(save_path)
+
+# Example usage:
+true_positive = 80
+false_positive = 20
+true_negative = 50
+false_negative = 10
+
+plot_roc_curve(638, 38, 73, 55, 'roc_curve.png')
